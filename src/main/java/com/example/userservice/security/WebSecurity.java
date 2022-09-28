@@ -21,12 +21,13 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable();
-//        http.authorizeRequests().antMatchers("/users/**").permitAll();
-        http.authorizeRequests().antMatchers("/**")
-                .hasIpAddress("218.153.162.78")
-//                .hasIpAddress("127.0.0.1")
-                .and()
-                .addFilter(getAuthenticationFilter());//권한
+        http.authorizeRequests().antMatchers("/actuator/**").permitAll();
+        http.authorizeRequests().antMatchers("/**").permitAll();//wifi환경이라 계속 바뀌어서 관리 힘듬
+//        http.authorizeRequests().antMatchers("/**")
+//                .hasIpAddress("192.168.110.51")
+////                .hasIpAddress("127.0.0.1")
+//                .and()
+//                .addFilter(getAuthenticationFilter());//권한
 
         http.headers().frameOptions().disable();
     }
