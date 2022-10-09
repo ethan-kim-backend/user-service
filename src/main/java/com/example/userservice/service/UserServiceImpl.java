@@ -1,12 +1,16 @@
 package com.example.userservice.service;
 
+import com.example.userservice.client.OrderServiceClient;
 import com.example.userservice.dto.UserDto;
 import com.example.userservice.repository.UserEntity;
 import com.example.userservice.repository.UserRepository;
 import com.example.userservice.vo.ResponseOrder;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
+import org.springframework.core.env.Environment;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -17,17 +21,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final Environment environment;
+    private final OrderServiceClient orderServiceClient;
+//    private final RestTemplate restTemplate;
+
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UserEntity userEntity = userRepository.findByEmail(username);
 
-        if(userEntity == null){
+        if (userEntity == null) {
             throw new UsernameNotFoundException(username);
         }
 
@@ -53,15 +62,36 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getUserByUserId(String userId) {
-        UserEntity userEntity =  userRepository.findByUserId(userId);
+        UserEntity userEntity = userRepository.findByUserId(userId);
 
-        if(userEntity == null){
+        if (userEntity == null) {
             throw new UsernameNotFoundException("User not found");
         }
 
         UserDto userDto = new ModelMapper().map(userEntity, UserDto.class);
 
-        List<ResponseOrder> orders = new ArrayList<>();
+//        List<ResponseOrder> orders = new ArrayList<>();
+//        String orderUrl = "http://127.0.0.1:8000/order-service/%s/orders";
+        System.out.println(environment.getProperty("order_service.url"));
+        String orderUrl = String.format(environment.getProperty("order_service.url"), userId);
+
+//        ResponseEntity<List<ResponseOrder>> orderListResponse = restTemplate.exchange(orderUrl, HttpMethod.GET, null,
+//                new ParameterizedTypeReference<List<ResponseOrder>>() {
+//                });
+//        List<ResponseOrder> orders = orderListResponse.getBody();
+//        userDto.setOrders(orders);
+
+        /* Using a feign client */
+        /* Feign Exception Handling */
+//        List<ResponseOrder> orders = orderServiceClient.getOrders(userId);
+//        List<ResponseOrder> orders = null;
+//        try{
+//            orderServiceClient.getOrders(userId);
+//        }catch (FeignException e){
+//            log.error(e.getMessage());
+//        }
+        /* Error Decoder */
+        List<ResponseOrder> orders = orderServiceClient.getOrders(userId);
         userDto.setOrders(orders);
 
         return userDto;
@@ -76,7 +106,7 @@ public class UserServiceImpl implements UserService {
     public UserDto getUserDetailsByEmail(String email) {
         UserEntity userEntity = userRepository.findByEmail(email);
 
-        if(userEntity == null){
+        if (userEntity == null) {
             throw new UsernameNotFoundException(email);
         }
 

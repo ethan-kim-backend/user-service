@@ -31,9 +31,9 @@ public class UserController {
     @GetMapping("/health-check")
     public String status() {
         return String.format("It's Working in User Service " +
-                ", port(local.server.port)= " + environment.getProperty("local.server.port")+
-                ", port(server.port)= " + environment.getProperty("server.port")+
-                ", token secret = " + environment.getProperty("token.secret")+
+                ", port(local.server.port)= " + environment.getProperty("local.server.port") +
+                ", port(server.port)= " + environment.getProperty("server.port") +
+                ", token secret = " + environment.getProperty("token.secret") +
                 ", token expiration time = " + environment.getProperty("token.expiration_time"));
     }
 
@@ -56,12 +56,12 @@ public class UserController {
     }
 
     @GetMapping("/users")
-    public ResponseEntity<List<ResponseUser>> getUsers(){
+    public ResponseEntity<List<ResponseUser>> getUsers() {
         Iterable<UserEntity> userList = userService.getUserByAll();
 
         List<ResponseUser> result = new ArrayList<>();
         ModelMapper modelMapper = new ModelMapper();
-        userList.forEach(user->{
+        userList.forEach(user -> {
             result.add(modelMapper.map(user, ResponseUser.class));
         });
 
@@ -70,10 +70,10 @@ public class UserController {
     }
 
     @GetMapping("/users/{userId}")
-    public ResponseEntity<ResponseUser> getUser(@PathVariable("userId") String userId){
+    public ResponseEntity<ResponseUser> getUser(@PathVariable("userId") String userId) {
         UserDto userDto = userService.getUserByUserId(userId);
 
-            ResponseUser returnValue = new ModelMapper().map(userDto, ResponseUser.class);
+        ResponseUser returnValue = new ModelMapper().map(userDto, ResponseUser.class);
 
         return ResponseEntity.status(HttpStatus.OK).body(returnValue);
     }
